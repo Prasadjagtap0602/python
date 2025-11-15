@@ -1,3 +1,4 @@
+import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -5,7 +6,6 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, accuracy_score
 
 data = {
     "Time_Spent": np.random.randint(1, 100, 500),
@@ -40,21 +40,23 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 model.fit(X_train, y_train)
 
-y_pred = model.predict(X_test)
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print(classification_report(y_test, y_pred))
+st.title("E-Commerce Purchase Predictor")
 
-def predict_purchase(time_spent, pages_visited, country, returning_user):
+time_spent = st.slider("Time Spent on Site (minutes)", 0, 100, 45)
+pages_visited = st.slider("Pages Visited", 1, 10, 5)
+country = st.selectbox("Country", ["USA", "India", "UK"])
+returning_user = st.radio("Returning User", ["Yes", "No"])
+
+if st.button("Predict Purchase"):
     input_data = pd.DataFrame([{
         "Time_Spent": time_spent,
         "Pages_Visited": pages_visited,
         "Country": country,
         "Returning_User": returning_user
     }])
+
     prob = model.predict_proba(input_data)[0][1]
     pred = "Yes" if prob >= 0.5 else "No"
-    print(f"Purchase Prediction: {pred} ({prob*100:.2f}% likelihood)")
-    return pred, prob
 
-predict_purchase(45, 7, "USA", "Yes")
-
+    st.subheader(f"Purchase Prediction: {pred}")
+    st.write(f"Likelihood: {prob * 100:.2f}%")
